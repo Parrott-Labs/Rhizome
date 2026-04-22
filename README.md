@@ -9,6 +9,7 @@ This CRM is under consistent development and is currently in a very early proof 
 - Fully offline capability
 - Vim like keybindings
 - Lives inside your terminal and as files in your directory
+- Minimal and clear TUI
 
 ### Dashboard
 - A quick glance for current status of projects and clients that need contacting
@@ -28,9 +29,11 @@ This CRM is under consistent development and is currently in a very early proof 
 - Client notes and project notes
 - Export functionality
 - Paid sync and cloud service
+- Quick edit cli support
+- Proper installation
 
 ## Install it yourself
-It's currently only tested on Linux. You need Rust (and cargo) installed to build it yourself.
+It's currently only tested on Linux. You need Rust (and cargo) installed and have to build it yourself.
 
 ```
 cargo build
