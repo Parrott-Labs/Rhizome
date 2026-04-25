@@ -6,6 +6,7 @@ mod storage;
 mod store;
 mod theme;
 mod ui;
+mod utils;
 
 use std::io;
 use std::time::{Duration, Instant};

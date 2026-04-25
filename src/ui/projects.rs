@@ -12,6 +12,7 @@ use crate::app::{App, Mode, NewProjectForm};
 use crate::models::{ActivityEntry, Client, Milestone, Project};
 use crate::theme::*;
 use crate::ui::widgets::{col, progress_bar_line};
+use crate::utils::parse_hours_from_message;
 
 pub fn render_projects(frame: &mut Frame, app: &App, area: Rect) {
     let cols = Layout::default()
@@ -462,7 +463,7 @@ fn render_hours_list(
         let selected = i == sel;
         let edge = if selected { Span::styled("│", fg(BRAND)) } else { Span::raw(" ") };
         let h = e.hours
-            .unwrap_or_else(|| crate::app::parse_hours_from_message(&e.message).unwrap_or(0.0));
+            .unwrap_or_else(|| parse_hours_from_message(&e.message).unwrap_or(0.0));
         let date = if e.at.len() >= 10 { &e.at[..10] } else { &e.at };
         let bg = if selected { SELECTED_BG } else { BG };
 
