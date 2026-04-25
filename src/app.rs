@@ -5,6 +5,7 @@ use crate::config::Config;
 use crate::models::{ActivityEntry, BrokenProject, Client, ContactMoment, Project, ProjectStatus, Stats, CONTACT_KINDS, PROJECT_STATUSES};
 use crate::store::Store;
 use crate::storage::Storage;
+use crate::utils::{non_empty, parse_hours_from_message, step_list};
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
@@ -988,23 +989,5 @@ impl NewContactForm {
 
     pub fn next_field(&mut self) { self.focused = (self.focused + 1) % self.fields.len(); }
     pub fn prev_field(&mut self) { self.focused = self.focused.checked_sub(1).unwrap_or(self.fields.len() - 1); }
-}
-
-pub fn parse_hours_from_message(msg: &str) -> Option<f64> {
-    msg.strip_prefix('+')
-        .and_then(|s| s.split(' ').next())
-        .and_then(|s| s.parse::<f64>().ok())
-}
-
-fn non_empty(s: &str) -> Option<String> {
-    let t = s.trim();
-    if t.is_empty() { None } else { Some(t.to_string()) }
-}
-
-fn step_list(state: &mut ListState, len: usize, delta: i64) {
-    if len == 0 { return; }
-    let cur = state.selected().unwrap_or(0) as i64;
-    let next = (cur + delta).clamp(0, len as i64 - 1) as usize;
-    state.select(Some(next));
 }
 

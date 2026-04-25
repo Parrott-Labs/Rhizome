@@ -1,7 +1,8 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use crate::app::{App, Focus, Mode, NewClientForm, NewContactForm, NewProjectForm, View, parse_hours_from_message};
+use crate::app::{App, Focus, Mode, NewClientForm, NewContactForm, NewProjectForm, View};
 use crate::models::{ProjectStatus, PROJECT_STATUSES};
+use crate::utils::parse_hours_from_message;
 
 pub fn handle_key(key: KeyEvent, app: &mut App) {
     // Any key skips boot
