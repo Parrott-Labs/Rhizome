@@ -6,6 +6,7 @@ mod storage;
 mod store;
 mod theme;
 mod ui;
+mod update_check;
 mod utils;
 
 use std::io;
@@ -14,9 +15,9 @@ use std::time::{Duration, Instant};
 use crossterm::{
     event::{self, Event},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{backend::CrosstermBackend, Terminal};
+use ratatui::{Terminal, backend::CrosstermBackend};
 
 use app::App;
 
@@ -53,9 +54,10 @@ fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) -> io::Result<()> 
 
         let timeout = tick_rate.saturating_sub(last_tick.elapsed());
         if event::poll(timeout)?
-            && let Event::Key(key) = event::read()? {
-                events::handle_key(key, &mut app);
-            }
+            && let Event::Key(key) = event::read()?
+        {
+            events::handle_key(key, &mut app);
+        }
 
         if last_tick.elapsed() >= tick_rate {
             app.tick();

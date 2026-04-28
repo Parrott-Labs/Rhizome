@@ -1,7 +1,9 @@
 use std::io;
 use std::path::Path;
 
-use crate::models::{ActivityEntry, BrokenProject, Client, ContactMoment, Project, ProjectStatus, Stats};
+use crate::models::{
+    ActivityEntry, BrokenProject, Client, ContactMoment, Project, ProjectStatus, Stats,
+};
 use crate::storage::Storage;
 
 pub struct Store<'a> {
@@ -22,7 +24,10 @@ impl<'a> Store<'a> {
     }
 
     pub fn save_client(&self, client: &Client) -> io::Result<()> {
-        let path = self.storage.clients_dir().join(format!("{}.toml", client.id));
+        let path = self
+            .storage
+            .clients_dir()
+            .join(format!("{}.toml", client.id));
         let text = toml::to_string_pretty(client)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         crate::storage::atomic_write(&path, text.as_bytes())
@@ -39,7 +44,8 @@ impl<'a> Store<'a> {
         let mut projects: Vec<Project> = load_toml_dir(&self.storage.projects_dir())?;
         // Join client names
         for p in &mut projects {
-            p.client_name = clients.iter()
+            p.client_name = clients
+                .iter()
                 .find(|c| c.id == p.client_id)
                 .map(|c| c.name.clone());
         }
@@ -48,7 +54,10 @@ impl<'a> Store<'a> {
     }
 
     pub fn save_project(&self, project: &Project) -> io::Result<()> {
-        let path = self.storage.projects_dir().join(format!("{}.toml", project.id));
+        let path = self
+            .storage
+            .projects_dir()
+            .join(format!("{}.toml", project.id));
         let text = toml::to_string_pretty(project)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         crate::storage::atomic_write(&path, text.as_bytes())
@@ -77,8 +86,8 @@ impl<'a> Store<'a> {
 
     pub fn save_contact(&self, c: &ContactMoment) -> io::Result<()> {
         let path = self.storage.contacts_dir().join(format!("{}.toml", c.id));
-        let text = toml::to_string_pretty(c)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let text =
+            toml::to_string_pretty(c).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         crate::storage::atomic_write(&path, text.as_bytes())
     }
 
@@ -93,7 +102,10 @@ impl<'a> Store<'a> {
     }
 
     pub fn save_activity(&self, entry: &ActivityEntry) -> io::Result<()> {
-        let path = self.storage.activity_dir().join(format!("{}.toml", entry.id));
+        let path = self
+            .storage
+            .activity_dir()
+            .join(format!("{}.toml", entry.id));
         let text = toml::to_string_pretty(entry)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         crate::storage::atomic_write(&path, text.as_bytes())
@@ -103,16 +115,21 @@ impl<'a> Store<'a> {
 
     pub fn compute_stats(clients: &[Client], projects: &[Project]) -> Stats {
         let total_clients = clients.len();
-        let active_projects = projects.iter().filter(|p| {
-            matches!(p.status, ProjectStatus::Running | ProjectStatus::Active)
-        }).count();
+        let active_projects = projects
+            .iter()
+            .filter(|p| matches!(p.status, ProjectStatus::Running | ProjectStatus::Active))
+            .count();
         let total_projects = projects.len();
-        let attention_count = projects.iter().filter(|p| {
-            p.status == ProjectStatus::Blocked || {
-                p.spent_pct().map(|pct| pct > 0.85).unwrap_or(false)
-            }
-        }).count();
-        let hours_this_week: f64 = projects.iter()
+        let attention_count = projects
+            .iter()
+            .filter(|p| {
+                p.status == ProjectStatus::Blocked || {
+                    p.spent_pct().map(|pct| pct > 0.85).unwrap_or(false)
+                }
+            })
+            .count();
+        let hours_this_week: f64 = projects
+            .iter()
             .filter(|p| p.status != ProjectStatus::Archived)
             .map(|p| p.spent_hours)
             .sum();
@@ -134,35 +151,50 @@ impl<'a> Store<'a> {
     pub fn load_broken_projects(&self) -> io::Result<Vec<BrokenProject>> {
         let dir = self.storage.projects_dir();
         let mut out = Vec::new();
-        if !dir.exists() { return Ok(out); }
+        if !dir.exists() {
+            return Ok(out);
+        }
         for entry in dir.read_dir()? {
             let path = entry?.path();
-            if path.extension().and_then(|e| e.to_str()) != Some("toml") { continue; }
+            if path.extension().and_then(|e| e.to_str()) != Some("toml") {
+                continue;
+            }
             let text = std::fs::read_to_string(&path)?;
-            if toml::from_str::<Project>(&text).is_ok() { continue; }
+            if toml::from_str::<Project>(&text).is_ok() {
+                continue;
+            }
             // Failed — try to extract basic info from raw TOML
             if let Ok(raw) = toml::from_str::<toml::Value>(&text) {
-                let get = |k: &str| raw.get(k).and_then(|v| v.as_str()).unwrap_or("").to_string();
+                let get = |k: &str| {
+                    raw.get(k)
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string()
+                };
                 out.push(BrokenProject {
                     path,
-                    name:       { let n = get("name"); if n.is_empty() { "unknown".into() } else { n } },
-                    id:         get("id"),
-                    client_id:  get("client_id"),
+                    name: {
+                        let n = get("name");
+                        if n.is_empty() { "unknown".into() } else { n }
+                    },
+                    id: get("id"),
+                    client_id: get("client_id"),
                     bad_status: get("status"),
-                    raw_toml:   text,
+                    raw_toml: text,
                 });
             }
         }
         Ok(out)
     }
-
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 fn load_toml_dir<T: serde::de::DeserializeOwned>(dir: &Path) -> io::Result<Vec<T>> {
     let mut out = Vec::new();
-    if !dir.exists() { return Ok(out); }
+    if !dir.exists() {
+        return Ok(out);
+    }
     for entry in dir.read_dir()? {
         let entry = entry?;
         let path = entry.path();
