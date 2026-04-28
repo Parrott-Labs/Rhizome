@@ -15,27 +15,49 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
-pub enum BorderStyle { None, Thin, Mixed, Heavy }
+pub enum BorderStyle {
+    None,
+    Thin,
+    Mixed,
+    Heavy,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
-pub enum Density { Dense, Balanced, Spacious }
+pub enum Density {
+    Dense,
+    Balanced,
+    Spacious,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
-pub enum SignatureWidget { Graph, Heat, Ascii, Clean }
+pub enum SignatureWidget {
+    Graph,
+    Heat,
+    Ascii,
+    Clean,
+}
 
-fn default_borders()   -> BorderStyle    { BorderStyle::Thin }
-fn default_density()   -> Density        { Density::Spacious }
-fn default_signature() -> SignatureWidget { SignatureWidget::Graph }
-fn default_true()      -> bool            { true }
+fn default_borders() -> BorderStyle {
+    BorderStyle::Thin
+}
+fn default_density() -> Density {
+    Density::Spacious
+}
+fn default_signature() -> SignatureWidget {
+    SignatureWidget::Graph
+}
+fn default_true() -> bool {
+    true
+}
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            borders:    default_borders(),
-            density:    default_density(),
-            signature:  default_signature(),
+            borders: default_borders(),
+            density: default_density(),
+            signature: default_signature(),
             animations: true,
         }
     }
@@ -45,9 +67,10 @@ impl Config {
     pub fn load_or_default(path: &Path) -> Self {
         if path.exists()
             && let Ok(text) = std::fs::read_to_string(path)
-                && let Ok(cfg) = toml::from_str(&text) {
-                    return cfg;
-                }
+            && let Ok(cfg) = toml::from_str(&text)
+        {
+            return cfg;
+        }
         Self::default()
     }
 

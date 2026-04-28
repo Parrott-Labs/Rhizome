@@ -1,9 +1,9 @@
 use ratatui::{
+    Frame,
     layout::Rect,
     style::Style,
     text::{Line, Span, Text},
     widgets::{Block, Paragraph},
-    Frame,
 };
 
 use crate::app::{App, BootPhase};
@@ -38,18 +38,20 @@ pub fn render_boot(frame: &mut Frame, app: &App, area: Rect) {
     let nc = app.clients.len();
     let np = app.projects.len();
     lines.push(Line::from(Span::styled(
-        format!("     rhizome · local node · v0.1.0 · {np} edge{} · {nc} root{}",
+        format!(
+            "     rhizome · local node · v0.1.0 · {np} edge{} · {nc} root{}",
             if np == 1 { "" } else { "s" },
-            if nc == 1 { "" } else { "s" }),
+            if nc == 1 { "" } else { "s" }
+        ),
         fg(SUBTLE),
     )));
     lines.push(Line::default());
 
     // Boot log lines (shown progressively)
     let show_count = match app.boot_phase {
-        BootPhase::Logo  => 0,
+        BootPhase::Logo => 0,
         BootPhase::Lines => app.boot_lines_shown,
-        BootPhase::Done  => app.boot_lines.len(),
+        BootPhase::Done => app.boot_lines.len(),
     };
 
     for (tag, msg) in app.boot_lines.iter().take(show_count) {
@@ -64,16 +66,16 @@ pub fn render_boot(frame: &mut Frame, app: &App, area: Rect) {
 
 fn boot_log_line<'a>(tag: &str, msg: &str) -> Line<'static> {
     let (tag_str, tag_color) = match tag {
-        "ok"   => ("  ok  ", GREEN),
+        "ok" => ("  ok  ", GREEN),
         "...." => (" .... ", AMBER),
         "boot" => (" boot ", BRAND),
-        _      => ("      ", SUBTLE),
+        _ => ("      ", SUBTLE),
     };
 
     Line::from(vec![
-        Span::styled("[ ".to_string(),          fg(SUBTLE)),
-        Span::styled(tag_str.to_string(),        fg(tag_color)),
-        Span::styled(" ] ".to_string(),          fg(SUBTLE)),
-        Span::styled(msg.to_string(),            fg(TEXT)),
+        Span::styled("[ ".to_string(), fg(SUBTLE)),
+        Span::styled(tag_str.to_string(), fg(tag_color)),
+        Span::styled(" ] ".to_string(), fg(SUBTLE)),
+        Span::styled(msg.to_string(), fg(TEXT)),
     ])
 }
