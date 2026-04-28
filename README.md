@@ -1,3 +1,5 @@
+<img width="1267" height="462" alt="Rhizome logo" src="https://github.com/user-attachments/assets/a8844151-2b87-446e-bb16-318d11a0b16b" />
+
 # Rhizome - the CRM that lives inside your terminal
 
 This CRM is under consistent development and is currently in a very early proof of concept. If you use this make sure to always have a back-up of your database.
