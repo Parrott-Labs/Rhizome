@@ -6,6 +6,7 @@ mod storage;
 mod store;
 mod theme;
 mod ui;
+mod utils;
 
 use std::io;
 use std::time::{Duration, Instant};
@@ -51,11 +52,10 @@ fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) -> io::Result<()> 
         terminal.draw(|f| ui::render(f, &app))?;
 
         let timeout = tick_rate.saturating_sub(last_tick.elapsed());
-        if event::poll(timeout)? {
-            if let Event::Key(key) = event::read()? {
+        if event::poll(timeout)?
+            && let Event::Key(key) = event::read()? {
                 events::handle_key(key, &mut app);
             }
-        }
 
         if last_tick.elapsed() >= tick_rate {
             app.tick();

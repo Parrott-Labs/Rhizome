@@ -1,13 +1,12 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Modifier, Style},
-    text::{Line, Span, Text},
+    style::Style,
+    text::{Line, Span},
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
     Frame,
 };
 
 use crate::app::{App, Focus, Mode, SearchResult, View};
-use crate::models::ProjectStatus;
 use crate::theme::*;
 
 mod boot;
@@ -16,10 +15,8 @@ mod clients;
 mod projects;
 mod widgets;
 
-pub use widgets::*;
-
 pub fn render(frame: &mut Frame, app: &App) {
-    let area = frame.size();
+    let area = frame.area();
 
     // Minimum size guard
     if area.width < 80 || area.height < 24 {

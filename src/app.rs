@@ -1,10 +1,10 @@
 use ratatui::widgets::ListState;
-use std::time::Instant;
 
 use crate::config::Config;
 use crate::models::{ActivityEntry, BrokenProject, Client, ContactMoment, Project, ProjectStatus, Stats, CONTACT_KINDS, PROJECT_STATUSES};
 use crate::store::Store;
 use crate::storage::Storage;
+use crate::utils::{non_empty, parse_hours_from_message, step_list};
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
@@ -184,7 +184,7 @@ impl App {
         let broken_projects = store.load_broken_projects()?;
 
         let boot_lines = vec![
-            ("ok".into(),   format!("loading config · ~/.config/rhizome/config.toml")),
+            ("ok".into(),   "loading config · ~/.config/rhizome/config.toml".to_string()),
             ("ok".into(),   format!("loading clients · {} record{}", clients.len(), if clients.len() == 1 { "" } else { "s" })),
             ("ok".into(),   format!("loading projects · {} record{}", projects.len(), if projects.len() == 1 { "" } else { "s" })),
             ("ok".into(),   format!("loading contacts · {} record{}", contacts.len(), if contacts.len() == 1 { "" } else { "s" })),
@@ -726,13 +726,12 @@ impl App {
         if let Some(entry) = self.activity.iter().find(|a| a.id == activity_id).cloned() {
             let hours = entry.hours
                 .unwrap_or_else(|| parse_hours_from_message(&entry.message).unwrap_or(0.0));
-            if let Some(pid) = &entry.project_id {
-                if let Some(project) = self.projects.iter_mut().find(|p| p.id == *pid) {
+            if let Some(pid) = &entry.project_id
+                && let Some(project) = self.projects.iter_mut().find(|p| p.id == *pid) {
                     project.spent_hours = (project.spent_hours - hours).max(0.0);
                     project.updated_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
                     store.save_project(project)?;
                 }
-            }
             store.delete_activity(activity_id)?;
         }
         self.activity = store.load_activity()?;
@@ -766,13 +765,12 @@ impl App {
                 hours:      Some(new_hours),
             };
             store.save_activity(&updated)?;
-            if let Some(pid) = &entry.project_id {
-                if let Some(project) = self.projects.iter_mut().find(|p| p.id == *pid) {
+            if let Some(pid) = &entry.project_id
+                && let Some(project) = self.projects.iter_mut().find(|p| p.id == *pid) {
                     project.spent_hours = (project.spent_hours - old_hours + new_hours).max(0.0);
                     project.updated_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
                     store.save_project(project)?;
                 }
-            }
         }
         self.activity = store.load_activity()?;
         self.projects = store.load_projects(&self.clients)?;
@@ -988,23 +986,5 @@ impl NewContactForm {
 
     pub fn next_field(&mut self) { self.focused = (self.focused + 1) % self.fields.len(); }
     pub fn prev_field(&mut self) { self.focused = self.focused.checked_sub(1).unwrap_or(self.fields.len() - 1); }
-}
-
-pub fn parse_hours_from_message(msg: &str) -> Option<f64> {
-    msg.strip_prefix('+')
-        .and_then(|s| s.split(' ').next())
-        .and_then(|s| s.parse::<f64>().ok())
-}
-
-fn non_empty(s: &str) -> Option<String> {
-    let t = s.trim();
-    if t.is_empty() { None } else { Some(t.to_string()) }
-}
-
-fn step_list(state: &mut ListState, len: usize, delta: i64) {
-    if len == 0 { return; }
-    let cur = state.selected().unwrap_or(0) as i64;
-    let next = (cur + delta).clamp(0, len as i64 - 1) as usize;
-    state.select(Some(next));
 }
 
