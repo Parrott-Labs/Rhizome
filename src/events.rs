@@ -418,11 +418,10 @@ fn handle_new_project(key: KeyEvent, app: &mut App, mut form: NewProjectForm) {
             // Auto-complete client field before advancing
             if form.focused == 1 {
                 let typed = form.fields[1].value.trim().to_lowercase();
-                if !typed.is_empty() {
-                    if let Some(c) = app.clients.iter().find(|c| c.name.to_lowercase().starts_with(&typed)) {
+                if !typed.is_empty()
+                    && let Some(c) = app.clients.iter().find(|c| c.name.to_lowercase().starts_with(&typed)) {
                         form.fields[1].value = c.name.clone();
                     }
-                }
             }
             form.next_field();
             app.mode = Mode::NewProject(form);

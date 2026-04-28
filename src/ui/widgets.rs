@@ -3,6 +3,7 @@ use ratatui::{
     text::{Line, Span},
 };
 
+use chrono::{DateTime, Utc};
 use crate::theme::*;
 
 /// Truncate `s` to at most `n` chars, then pad with spaces to exactly `n`.
@@ -46,8 +47,8 @@ pub fn progress_bar_line(
     let filled = ((filled_frac.clamp(0.0, 1.0)) * bar_w as f64).round() as usize;
     let empty = bar_w.saturating_sub(filled);
 
-    let filled_str: String = std::iter::repeat('█').take(filled).collect();
-    let empty_str: String  = std::iter::repeat('░').take(empty).collect();
+    let filled_str: String = std::iter::repeat_n('█', filled).collect();
+    let empty_str: String  = std::iter::repeat_n('░', empty).collect();
 
     let bar_color = if complete { GREEN } else { BRAND };
 
@@ -93,7 +94,6 @@ pub fn style_logo_line(line: &str) -> Line<'static> {
 // ── Relative time display ────────────────────────────────────────────────────
 
 pub fn relative_time(iso: &str) -> String {
-    use chrono::{DateTime, Local, Utc};
     let Ok(dt) = iso.parse::<DateTime<Utc>>() else { return iso.to_string(); };
     let now = Utc::now();
     let secs = (now - dt).num_seconds();

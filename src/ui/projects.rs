@@ -563,7 +563,7 @@ fn tail_chars(s: &str, n: usize) -> String {
     }
 }
 
-fn client_ghost<'a>(typed: &str, clients: &'a [Client]) -> String {
+fn client_ghost(typed: &str, clients: &[Client]) -> String {
     if typed.is_empty() { return String::new(); }
     let lower = typed.to_lowercase();
     clients.iter()

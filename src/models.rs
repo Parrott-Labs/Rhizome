@@ -5,8 +5,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum ProjectStatus {
     Lead,
+    #[default]
     Pending,
     Active,
     Running,
@@ -37,9 +39,6 @@ impl fmt::Display for ProjectStatus {
     }
 }
 
-impl Default for ProjectStatus {
-    fn default() -> Self { Self::Pending }
-}
 
 impl From<&str> for ProjectStatus {
     fn from(s: &str) -> Self {
