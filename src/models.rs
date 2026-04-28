@@ -1,11 +1,10 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 // ── ProjectStatus ─────────────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[derive(Default)]
 pub enum ProjectStatus {
     Lead,
     #[default]
@@ -19,11 +18,11 @@ pub enum ProjectStatus {
 impl ProjectStatus {
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::Lead     => "lead",
-            Self::Pending  => "pending",
-            Self::Active   => "active",
-            Self::Running  => "running",
-            Self::Blocked  => "blocked",
+            Self::Lead => "lead",
+            Self::Pending => "pending",
+            Self::Active => "active",
+            Self::Running => "running",
+            Self::Blocked => "blocked",
             Self::Archived => "archived",
         }
     }
@@ -39,16 +38,15 @@ impl fmt::Display for ProjectStatus {
     }
 }
 
-
 impl From<&str> for ProjectStatus {
     fn from(s: &str) -> Self {
         match s {
-            "lead"     => Self::Lead,
-            "active"   => Self::Active,
-            "running"  => Self::Running,
-            "blocked"  => Self::Blocked,
+            "lead" => Self::Lead,
+            "active" => Self::Active,
+            "running" => Self::Running,
+            "blocked" => Self::Blocked,
             "archived" => Self::Archived,
-            _          => Self::Pending,
+            _ => Self::Pending,
         }
     }
 }
@@ -59,12 +57,12 @@ impl From<&str> for ProjectStatus {
 /// We keep enough info to display a warning and let the user repair it.
 #[derive(Debug, Clone)]
 pub struct BrokenProject {
-    pub path:       std::path::PathBuf,
-    pub name:       String,
-    pub id:         String,
-    pub client_id:  String,
+    pub path: std::path::PathBuf,
+    pub name: String,
+    pub id: String,
+    pub client_id: String,
     pub bad_status: String,
-    pub raw_toml:   String,
+    pub raw_toml: String,
 }
 
 pub const PROJECT_STATUSES: &[ProjectStatus] = &[
@@ -104,8 +102,12 @@ pub struct Client {
     pub updated_at: String,
 }
 
-fn default_currency() -> String { "EUR".into() }
-fn default_active()   -> String { "active".into() }
+fn default_currency() -> String {
+    "EUR".into()
+}
+fn default_active() -> String {
+    "active".into()
+}
 
 impl Client {
     pub fn health_color(&self) -> ratatui::style::Color {
@@ -114,9 +116,9 @@ impl Client {
     pub fn location_str(&self) -> String {
         match (&self.city, &self.country) {
             (Some(c), Some(co)) => format!("{} · {}", c, co),
-            (Some(c), None)     => c.clone(),
-            (None, Some(co))    => co.clone(),
-            _                   => String::new(),
+            (Some(c), None) => c.clone(),
+            (None, Some(co)) => co.clone(),
+            _ => String::new(),
         }
     }
     pub fn rate_display(&self) -> String {
@@ -138,7 +140,7 @@ pub struct Project {
     #[serde(default)]
     pub budget_hours: Option<f64>,
     #[serde(default = "default_budget_kind")]
-    pub budget_kind: String,  // "total" | "monthly"
+    pub budget_kind: String, // "total" | "monthly"
     #[serde(default)]
     pub spent_hours: f64,
     #[serde(default)]
@@ -160,7 +162,9 @@ pub struct Project {
     pub client_name: Option<String>,
 }
 
-fn default_budget_kind() -> String { "total".into() }
+fn default_budget_kind() -> String {
+    "total".into()
+}
 
 impl Project {
     pub fn status_color(&self) -> ratatui::style::Color {
@@ -220,12 +224,18 @@ pub struct Milestone {
 }
 
 impl Milestone {
-    pub fn is_done(&self) -> bool { self.done_at.is_some() }
+    pub fn is_done(&self) -> bool {
+        self.done_at.is_some()
+    }
     pub fn symbol(&self) -> &str {
         if self.is_done() { "✓" } else { "·" }
     }
     pub fn symbol_color(&self) -> ratatui::style::Color {
-        if self.is_done() { crate::theme::GREEN } else { crate::theme::SUBTLE }
+        if self.is_done() {
+            crate::theme::GREEN
+        } else {
+            crate::theme::SUBTLE
+        }
     }
     pub fn due_display(&self) -> String {
         self.due_at.as_deref().unwrap_or("").to_string()
@@ -250,22 +260,26 @@ impl ActivityEntry {
     pub fn symbol(&self) -> &str {
         match self.kind.as_str() {
             "deploy" | "invoice" => "✓",
-            "warn"               => "!",
-            "call"               => "→",
-            _                    => "·",
+            "warn" => "!",
+            "call" => "→",
+            _ => "·",
         }
     }
     pub fn symbol_color(&self) -> ratatui::style::Color {
         match self.kind.as_str() {
             "deploy" | "invoice" => crate::theme::GREEN,
-            "warn"               => crate::theme::AMBER,
-            "call"               => crate::theme::BLUE,
-            _                    => crate::theme::ACCENT,
+            "warn" => crate::theme::AMBER,
+            "call" => crate::theme::BLUE,
+            _ => crate::theme::ACCENT,
         }
     }
     pub fn at_short(&self) -> &str {
         // Return first 16 chars of ISO timestamp: "2026-04-02 11:30"
-        if self.at.len() >= 16 { &self.at[..16] } else { &self.at }
+        if self.at.len() >= 16 {
+            &self.at[..16]
+        } else {
+            &self.at
+        }
     }
 }
 
@@ -273,25 +287,25 @@ impl ActivityEntry {
 pub struct ContactMoment {
     pub id: String,
     pub client_id: String,
-    pub kind: String,    // email | phone | meeting
+    pub kind: String, // email | phone | meeting
     pub summary: String,
-    pub date: String,    // YYYY-MM-DD
+    pub date: String, // YYYY-MM-DD
     pub created_at: String,
 }
 
 impl ContactMoment {
     pub fn kind_symbol(&self) -> &str {
         match self.kind.as_str() {
-            "phone"   => "☎",
+            "phone" => "☎",
             "meeting" => "◈",
-            _         => "✉",
+            _ => "✉",
         }
     }
     pub fn kind_color(&self) -> ratatui::style::Color {
         match self.kind.as_str() {
-            "phone"   => crate::theme::GREEN,
+            "phone" => crate::theme::GREEN,
             "meeting" => crate::theme::AMBER,
-            _         => crate::theme::CYAN,
+            _ => crate::theme::CYAN,
         }
     }
 }
