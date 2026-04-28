@@ -43,13 +43,11 @@ impl Default for Config {
 
 impl Config {
     pub fn load_or_default(path: &Path) -> Self {
-        if path.exists() {
-            if let Ok(text) = std::fs::read_to_string(path) {
-                if let Ok(cfg) = toml::from_str(&text) {
+        if path.exists()
+            && let Ok(text) = std::fs::read_to_string(path)
+                && let Ok(cfg) = toml::from_str(&text) {
                     return cfg;
                 }
-            }
-        }
         Self::default()
     }
 

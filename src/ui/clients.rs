@@ -2,12 +2,12 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, List, ListItem, ListState, Paragraph},
+    widgets::{List, ListItem, ListState, Paragraph},
     Frame,
 };
 
 use crate::app::{App, Mode, NewClientForm, NewContactForm};
-use crate::models::{ActivityEntry, Client, ContactMoment, Project, CONTACT_KINDS};
+use crate::models::{Client, ContactMoment, CONTACT_KINDS};
 use crate::theme::*;
 use crate::ui::widgets::{col, relative_time};
 

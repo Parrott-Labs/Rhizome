@@ -2,14 +2,14 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, List, ListItem, ListState, Paragraph},
+    widgets::{List, ListItem, Paragraph},
     Frame,
 };
 
 use crate::app::App;
 use crate::models::{Client, Project, ProjectStatus};
 use crate::theme::*;
-use crate::ui::widgets::{col, progress_bar_line, relative_time, sparkline_span, status_pill};
+use crate::ui::widgets::{col, progress_bar_line};
 
 pub fn render_dashboard(frame: &mut Frame, app: &App, area: Rect) {
     let v = Layout::default()
