@@ -6,6 +6,9 @@ use ratatui::{
     widgets::{List, ListItem, Paragraph},
 };
 
+use chrono::{Local, Datelike, NaiveDate};
+use std::collections::HashMap;
+
 use crate::app::App;
 use crate::models::{Client, Project, ProjectStatus};
 use crate::theme::*;
@@ -192,8 +195,10 @@ fn render_left(frame: &mut Frame, app: &App, area: Rect) {
             Constraint::Length(1), // section header
             Constraint::Length(5), // project list (5 items)
             Constraint::Length(1), // spacer
-            Constraint::Length(1), // hours header
-            Constraint::Fill(1),   // bars
+            Constraint::Length(1), // week hours header
+            Constraint::Length(5), // week bars
+            Constraint::Length(1), // month hours header
+            Constraint::Fill(1),   // month bars
         ])
         .split(area);
 
@@ -218,38 +223,83 @@ fn render_left(frame: &mut Frame, app: &App, area: Rect) {
     let mut state = app.dashboard_list.clone();
     frame.render_stateful_widget(list, rows[1], &mut state);
 
-    // Hours distribution header
+    // Weekly hours distribution header
     frame.render_widget(
         Paragraph::new(Span::styled("week · hours distribution", fg(SUBTLE))),
         rows[3],
     );
+    // Per-client weekly hour bars
+    render_week_hours_bars(frame, app, rows[4]);
 
-    // Per-client hour bars
-    render_hours_bars(frame, app, rows[4]);
+    // Monthly hours distribution header
+    frame.render_widget(
+        Paragraph::new(Span::styled("month · hours distribution", fg(SUBTLE))),
+        rows[5],
+    );
+    // Per-client monthly hour bars
+    render_month_hours_bars(frame, app, rows[6]);
 }
 
-fn render_hours_bars(frame: &mut Frame, app: &App, area: Rect) {
-    // Aggregate spent hours per client, pick top clients
-    let mut client_hours: Vec<(String, f64)> = app
-        .clients
-        .iter()
-        .map(|c| {
-            let h: f64 = app
-                .projects
-                .iter()
-                .filter(|p| p.client_id == c.id && p.status != ProjectStatus::Archived)
-                .map(|p| p.spent_hours)
-                .sum();
-            (c.name.clone(), h)
-        })
-        .filter(|(_, h)| *h > 0.0)
-        .collect();
-    client_hours.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+fn render_week_hours_bars(frame: &mut Frame, app: &App, area: Rect) {
+    let today = Local::now().date_naive();
 
-    let max_h = client_hours.first().map(|(_, h)| *h).unwrap_or(1.0);
+    let mut client_hours: HashMap<String, f64> = HashMap::new();
+
+    for entry in app.activity.iter().filter(|entry| {
+        entry.hours.is_some()
+            && NaiveDate::parse_from_str(&entry.at[..10], "%Y-%m-%d")
+                .map(|d| d.iso_week() == today.iso_week() && d.year() == today.year())
+                .unwrap_or(false)
+    }) {
+        let name = app.clients
+            .iter()
+            .find(|client| Some(&client.id) == entry.client_id.as_ref())
+            .map(|client| client.name.clone())
+            .unwrap_or_default();
+        *client_hours.entry(name).or_insert(0.0) += entry.hours.unwrap_or(0.0);
+    }
+
+    let mut client_hours_vec: Vec<(String, f64)> = client_hours.into_iter().collect();
+    client_hours_vec.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+    let max_h = client_hours_vec.first().map(|(_, h)| *h).unwrap_or(1.0);
     let bar_w = area.width as usize;
 
-    let lines: Vec<Line> = client_hours
+    let lines: Vec<Line> = client_hours_vec
+        .iter()
+        .take(area.height as usize)
+        .map(|(name, hours)| {
+            progress_bar_line(name, hours / max_h, &format!("{:.1}h", hours), bar_w, false)
+        })
+        .collect();
+
+    frame.render_widget(Paragraph::new(Text::from(lines)), area);
+}
+
+fn render_month_hours_bars(frame: &mut Frame, app: &App, area: Rect) {
+    let today = Local::now().date_naive();
+    let this_month = format!("{}-{:02}", today.year(), today.month());
+
+    let mut client_hours: HashMap<String, f64> = HashMap::new();
+
+    for entry in app.activity
+        .iter()
+        .filter(|entry| entry.hours.is_some() && &entry.at[..7] == this_month) {
+            let name = app.clients
+                .iter()
+                .find(|client| Some(&client.id) == entry.client_id.as_ref())
+                .map(|client| client.name.clone())
+                .unwrap_or_default();
+            *client_hours.entry(name).or_insert(0.0) += entry.hours.unwrap_or(0.0);
+        }
+
+    let mut client_hours_vec: Vec<(String, f64)> = client_hours.into_iter().collect();
+    client_hours_vec.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+    let max_h = client_hours_vec.first().map(|(_, h)| *h).unwrap_or(1.0);
+    let bar_w = area.width as usize;
+
+    let lines: Vec<Line> = client_hours_vec
         .iter()
         .take(area.height as usize)
         .map(|(name, hours)| {
