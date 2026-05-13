@@ -133,7 +133,7 @@ fn render_stats(frame: &mut Frame, app: &App, area: Rect) {
     render_stat_cell(
         frame,
         cells[2],
-        "HOURS LOGGED",
+        "WEEKLY HOURS",
         &hours_val,
         "",
         SUBTLE,

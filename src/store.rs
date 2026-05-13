@@ -5,6 +5,7 @@ use crate::models::{
     ActivityEntry, BrokenProject, Client, ContactMoment, Project, ProjectStatus, Stats,
 };
 use crate::storage::Storage;
+use chrono::{Local, Datelike, NaiveDate};
 
 pub struct Store<'a> {
     storage: &'a Storage,
@@ -113,7 +114,7 @@ impl<'a> Store<'a> {
 
     // ── Stats ─────────────────────────────────────────────────────────────────
 
-    pub fn compute_stats(clients: &[Client], projects: &[Project]) -> Stats {
+    pub fn compute_stats(clients: &[Client], projects: &[Project], activities: &[ActivityEntry]) -> Stats {
         let total_clients = clients.len();
         let active_projects = projects
             .iter()
@@ -128,11 +129,18 @@ impl<'a> Store<'a> {
                 }
             })
             .count();
-        let hours_this_week: f64 = projects
+
+        let today = Local::now().date_naive();
+        let hours_this_week: f64 = activities
             .iter()
-            .filter(|p| p.status != ProjectStatus::Archived)
-            .map(|p| p.spent_hours)
+            .filter(|activity| {
+                activity.hours.is_some() && NaiveDate::parse_from_str(&activity.at[..10], "%Y-%m-%d")
+                .map(|d| d.iso_week() == today.iso_week() && d.year() == today.year())
+                .unwrap_or(false)
+            })
+            .map(|activity| activity.hours.unwrap_or(0.0))
             .sum();
+
         let clients_this_quarter = 0usize; // populated once time-tracking lands
         Stats {
             total_clients,

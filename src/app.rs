@@ -284,7 +284,7 @@ impl App {
         projects.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
         let activity = store.load_activity()?;
         let contacts = store.load_contacts()?;
-        let stats = Store::compute_stats(&clients, &projects);
+        let stats = Store::compute_stats(&clients, &projects, &activity);
         let broken_projects = store.load_broken_projects()?;
 
         let boot_lines = vec![
@@ -739,7 +739,7 @@ impl App {
         let store = Store::new(&self.storage);
         self.projects = store.load_projects(&self.clients)?;
         self.broken_projects = store.load_broken_projects()?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
         Ok(())
     }
 
@@ -748,7 +748,7 @@ impl App {
         store.delete_project(id)?;
         // Reload projects and recompute stats
         self.projects = store.load_projects(&self.clients)?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
         // Clamp selection so it doesn't point past the end
         let new_len = self.projects.len();
         if new_len == 0 {
@@ -774,7 +774,7 @@ impl App {
         // Reload everything
         self.clients = store.load_clients()?;
         self.projects = store.load_projects(&self.clients)?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
         // Clamp list selections
         let cn = self.clients.len();
         if cn == 0 {
@@ -870,7 +870,7 @@ impl App {
         };
 
         self.clients = store.load_clients()?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
 
         if let Some(idx) = self.clients.iter().position(|c| c.id == saved_id) {
             self.client_list.select(Some(idx));
@@ -942,7 +942,7 @@ impl App {
 
         self.projects = store.load_projects(&self.clients)?;
         self.activity = store.load_activity()?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
         Ok(())
     }
 
@@ -987,7 +987,7 @@ impl App {
         }
         self.activity = store.load_activity()?;
         self.projects = store.load_projects(&self.clients)?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
         Ok(())
     }
 
@@ -1034,7 +1034,7 @@ impl App {
         }
         self.activity = store.load_activity()?;
         self.projects = store.load_projects(&self.clients)?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
         Ok(())
     }
 
@@ -1111,7 +1111,7 @@ impl App {
 
         let saved_id = project.id.clone();
         self.projects = store.load_projects(&self.clients)?;
-        self.stats = Store::compute_stats(&self.clients, &self.projects);
+        self.stats = Store::compute_stats(&self.clients, &self.projects, &self.activity);
 
         if let Some(idx) = self.projects.iter().position(|p| p.id == saved_id) {
             self.project_list.select(Some(idx));
