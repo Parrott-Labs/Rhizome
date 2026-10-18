@@ -486,12 +486,6 @@ impl App {
             .and_then(|i| self.projects.get(i))
     }
 
-    pub fn selected_dashboard_project(&self) -> Option<&Project> {
-        self.dashboard_list
-            .selected()
-            .and_then(|i| self.projects.get(i))
-    }
-
     pub fn client_projects(&self, client_id: &str) -> Vec<&Project> {
         self.projects
             .iter()

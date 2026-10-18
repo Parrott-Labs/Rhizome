@@ -15,22 +15,6 @@ pub fn col(s: &str, n: usize) -> String {
     out
 }
 
-// ── Status pill: ● running ────────────────────────────────────────────────────
-
-pub fn status_pill(status: &str) -> Vec<Span<'static>> {
-    let color = status_color(status);
-    vec![
-        Span::styled("● ".to_string(), Style::default().fg(color)),
-        Span::styled(status.to_string(), Style::default().fg(color)),
-    ]
-}
-
-// ── Sparkline: 8 chars from ` ▁▂▃▄▅▆▇█` ─────────────────────────────────────
-
-pub fn sparkline_span(data_str: &str) -> Span<'static> {
-    Span::styled(data_str.to_string(), Style::default().fg(BRAND))
-}
-
 // ── Progress bar line ─────────────────────────────────────────────────────────
 
 /// Returns a Line for a progress bar row.
@@ -66,14 +50,6 @@ pub fn progress_bar_line(
     ])
 }
 
-// ── Key hint pair: <key> label ────────────────────────────────────────────────
-
-pub fn key_hint<'a>(key: &str, label: &str) -> Vec<Span<'a>> {
-    vec![
-        Span::styled(key.to_string(), Style::default().fg(ACCENT).bg(BORDER)),
-        Span::styled(format!(" {}", label), fg(SUBTLE)),
-    ]
-}
 
 // ── Boot logo styling ─────────────────────────────────────────────────────────
 
