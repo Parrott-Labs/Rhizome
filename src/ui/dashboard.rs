@@ -260,7 +260,10 @@ fn render_week_hours_bars(frame: &mut Frame, app: &App, area: Rect) {
     }
 
     let mut client_hours_vec: Vec<(String, f64)> = client_hours.into_iter().collect();
-    client_hours_vec.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    client_hours_vec.sort_by(|a, b| {
+        b.1.partial_cmp(&a.1).unwrap()
+            .then_with(|| a.0.cmp(&b.0))
+    });
 
     let max_h = client_hours_vec.first().map(|(_, h)| *h).unwrap_or(1.0);
     let bar_w = area.width as usize;
@@ -294,7 +297,10 @@ fn render_month_hours_bars(frame: &mut Frame, app: &App, area: Rect) {
         }
 
     let mut client_hours_vec: Vec<(String, f64)> = client_hours.into_iter().collect();
-    client_hours_vec.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    client_hours_vec.sort_by(|a, b| {
+        b.1.partial_cmp(&a.1).unwrap()
+            .then_with(|| a.0.cmp(&b.0))
+    });
 
     let max_h = client_hours_vec.first().map(|(_, h)| *h).unwrap_or(1.0);
     let bar_w = area.width as usize;
