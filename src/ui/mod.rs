@@ -103,23 +103,14 @@ fn render_topbar(frame: &mut Frame, app: &App, area: Rect) {
         left[0],
     );
 
-    // Right: heartbeat + db status / update notice
-    let hb_color = if app.config.animations {
-        heartbeat_color(app.tick_count)
-    } else {
-        BRAND
-    };
-
+    // Right: update notice
     let right_spans = if let Some(msg) = &app.update_msg {
         vec![
             Span::styled("▲ ".to_string(), fg(AMBER)),
             Span::styled(msg.as_str(), fg(AMBER)),
         ]
     } else {
-        vec![
-            Span::styled("● ".to_string(), fg(hb_color)),
-            Span::styled("db ok".to_string(), fg(SUBTLE)),
-        ]
+        Vec::new()
     };
 
     frame.render_widget(Paragraph::new(Line::from(right_spans)), left[1]);
@@ -642,20 +633,5 @@ fn render_cmdbar(frame: &mut Frame, app: &App, area: Rect) {
     frame.render_widget(
         Paragraph::new(middle).style(Style::default().bg(CMDBAR_BG)),
         cols[1],
-    );
-
-    // Status right
-    let hb = if app.config.animations {
-        heartbeat_color(app.tick_count)
-    } else {
-        BRAND
-    };
-    frame.render_widget(
-        Paragraph::new(Line::from(vec![
-            Span::styled("● ".to_string(), fg(hb)),
-            Span::styled("online · files · ok", fg(SUBTLE)),
-        ]))
-        .style(Style::default().bg(CMDBAR_BG)),
-        cols[2],
     );
 }
